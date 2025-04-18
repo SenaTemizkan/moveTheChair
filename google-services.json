@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "986151055146",
+    "project_id": "movethechair-759f2",
+    "storage_bucket": "movethechair-759f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986151055146:android:35e0f5b9527e203fb2f853",
+        "android_client_info": {
+          "package_name": "com.example.movethechair"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAR_p5IHmXnOM-2eRpqk2YSj_BsaLt2_kU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
