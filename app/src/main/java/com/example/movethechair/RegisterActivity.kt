@@ -21,11 +21,9 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        // Firebase başlatma
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
-        // UI bileşenlerini ayarla
         nameEditText = findViewById(R.id.editTextName)
         emailEditText = findViewById(R.id.editTextEmail)
         passwordEditText = findViewById(R.id.editTextPassword)
@@ -59,13 +57,10 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun registerUser(name: String, email: String, password: String) {
-        // Kullanıcıyı Firebase Authentication'a kaydet
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
-                // Kullanıcı başarıyla kimlik doğrulama sistemine kaydedildi
                 val user = authResult.user
 
-                // Kullanıcıyı veritabanına ekle
                 user?.let {
                     val userId = it.uid
                     val userRef = database.reference.child("users").child(userId)

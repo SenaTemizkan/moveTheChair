@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.util.Calendar
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,7 +28,6 @@ class MainActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
-        // Kullanıcı giriş yapılmadıysa login sayfasına yönlendir
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -82,30 +83,47 @@ class MainActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return
         val appointmentsRef = database.reference.child("appointments").child(userId)
 
-        appointmentsRef.addValueEventListener(object : ValueEventListener {
+        appointmentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val appointments = StringBuilder()
-                    appointments.append("Randevularınız:\n\n")
+                val now = Calendar.getInstance()
+                val appointments = StringBuilder()
+                var hasFutureAppointments = false
 
-                    for (appointmentSnapshot in snapshot.children) {
-                        val date = appointmentSnapshot.child("date").getValue(String::class.java)
-                        val time = appointmentSnapshot.child("time").getValue(String::class.java)
-                        val barberId = appointmentSnapshot.child("barberId").getValue(String::class.java)
+                for (appointmentSnapshot in snapshot.children) {
+                    val dateStr = appointmentSnapshot.child("date").getValue(String::class.java)
+                    val timeStr = appointmentSnapshot.child("time").getValue(String::class.java)
+                    val barberId = appointmentSnapshot.child("barberId").getValue(String::class.java)
 
-                        // Berber bilgilerini al
-                        getBarberInfo(barberId) { barberName ->
-                            if (date != null && time != null) {
-                                val formattedDate = date.replace("_", "/")
-                                val formattedTime = time.replace("_", ":")
-                                appointments.append("- $barberName: $formattedDate saat $formattedTime\n")
+                    if (dateStr != null && timeStr != null) {
+                        val dateParts = dateStr.split("_")
+                        val timeParts = timeStr.split("_")
+                        if (dateParts.size == 3 && timeParts.size == 2) {
+                            val appointmentDate = Calendar.getInstance().apply {
+                                set(Calendar.DAY_OF_MONTH, dateParts[0].toInt())
+                                set(Calendar.MONTH, dateParts[1].toInt() - 1)
+                                set(Calendar.YEAR, dateParts[2].toInt())
+                                set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
+                                set(Calendar.MINUTE, timeParts[1].toInt())
+                                set(Calendar.SECOND, 0)
                             }
 
-                            appointmentsTextView.text = appointments.toString()
+                            if (appointmentDate.before(now)) {
+                                appointmentSnapshot.ref.removeValue()
+                            } else {
+                                getBarberInfo(barberId) { barberName ->
+                                    val formattedDate = dateStr.replace("_", "/")
+                                    val formattedTime = timeStr.replace("_", ":")
+                                    appointments.append("- $barberName: $formattedDate saat $formattedTime\n")
+                                    appointmentsTextView.text = appointments.toString()
+                                }
+                                hasFutureAppointments = true
+                            }
                         }
                     }
-                } else {
-                    appointmentsTextView.text = "Henüz randevunuz bulunmamaktadır."
+                }
+
+                if (!hasFutureAppointments) {
+                    appointmentsTextView.text = "Henüz gelecekte bir randevunuz bulunmamaktadır."
                 }
             }
 
@@ -114,6 +132,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun getBarberInfo(barberId: String?, callback: (String) -> Unit) {
         if (barberId == null) {
@@ -137,4 +156,5 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
 }

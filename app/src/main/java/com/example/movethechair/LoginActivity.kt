@@ -22,7 +22,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Kullanıcı zaten giriş yapmış mı kontrol et
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
