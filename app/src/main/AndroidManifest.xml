@@ -32,8 +32,11 @@
             android:name=".RegisterActivity"
             android:exported="false" />
 
-        <activity android:name=".BookAppointmentActivity" />
+        <activity
+            android:name=".BarberActivity"
+            android:exported="false" />
 
+        <activity android:name=".BookAppointmentActivity" />
 
     </application>
 

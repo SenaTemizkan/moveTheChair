@@ -209,5 +209,4 @@ class BookAppointmentActivity : AppCompatActivity() {
             }
         }
     }
-//github deneme
 }

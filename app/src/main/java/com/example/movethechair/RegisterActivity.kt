@@ -2,9 +2,7 @@ package com.example.movethechair
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -16,6 +14,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var nameEditText: EditText
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
+    private lateinit var roleRadioGroup: RadioGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,12 +26,25 @@ class RegisterActivity : AppCompatActivity() {
         nameEditText = findViewById(R.id.editTextName)
         emailEditText = findViewById(R.id.editTextEmail)
         passwordEditText = findViewById(R.id.editTextPassword)
+        roleRadioGroup = findViewById(R.id.radioGroupRole)
         val registerButton = findViewById<Button>(R.id.buttonRegister)
 
         registerButton.setOnClickListener {
             val name = nameEditText.text.toString().trim()
             val email = emailEditText.text.toString().trim()
-            val password = passwordEditText.text.toString()
+            val password = passwordEditText.text.toString().trim()
+
+            val selectedRoleId = roleRadioGroup.checkedRadioButtonId
+            if (selectedRoleId == -1) {
+                Toast.makeText(this, "Lütfen bir rol seçin", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val role = when (selectedRoleId) {
+                R.id.radioCustomer -> "customer"
+                R.id.radioBarber -> "barber"
+                else -> ""
+            }
 
             if (name.isEmpty()) {
                 nameEditText.error = "İsim gerekli"
@@ -52,11 +64,11 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            registerUser(name, email, password)
+            registerUser(name, email, password, role)
         }
     }
 
-    private fun registerUser(name: String, email: String, password: String) {
+    private fun registerUser(name: String, email: String, password: String, role: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
                 val user = authResult.user
@@ -65,18 +77,32 @@ class RegisterActivity : AppCompatActivity() {
                     val userId = it.uid
                     val userRef = database.reference.child("users").child(userId)
 
-                    val userData = HashMap<String, Any>()
-                    userData["name"] = name
-                    userData["email"] = email
+                    val userData = hashMapOf(
+                        "name" to name,
+                        "email" to email,
+                        "role" to role
+                    )
 
                     userRef.setValue(userData)
                         .addOnSuccessListener {
+                            if (role == "barber") {
+
+                                val barberRef = database.reference.child("barbers").child(userId)
+                                val barberData = hashMapOf(
+                                    "name" to name,
+                                    "location" to "",
+                                    "services" to listOf<String>(),
+                                    "availableHours" to listOf<String>()
+                                )
+                                barberRef.setValue(barberData)
+                            }
+
                             Toast.makeText(this, "Kayıt başarılı!", Toast.LENGTH_SHORT).show()
                             startActivity(Intent(this, LoginActivity::class.java))
                             finish()
                         }
                         .addOnFailureListener { e ->
-                            Toast.makeText(this, "Veritabanı kaydı başarısız: ${e.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, "Veritabanı hatası: ${e.message}", Toast.LENGTH_LONG).show()
                         }
                 }
             }
@@ -84,4 +110,5 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "Kayıt başarısız: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
+
 }

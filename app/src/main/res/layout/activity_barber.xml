@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".BarberActivity">
+
+    <TextView
+        android:id="@+id/textViewBarberName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Hoş geldiniz"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:contentDescription="Berber giriş ekranı - Hoş geldiniz"
+        android:importantForAccessibility="yes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/buttonShowConfirmed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Onaylanan Randevular"
+        android:textSize="14sp"
+        android:backgroundTint="@color/design_default_color_primary"
+        android:contentDescription="Onaylanmış randevuları görüntüle"
+        android:importantForAccessibility="yes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewBarberName" />
+
+    <TextView
+        android:id="@+id/textViewAppointmentsTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Randevu Talepleri"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:contentDescription="Randevu listesinin başlığı"
+        android:importantForAccessibility="yes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonShowConfirmed" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewAppointments"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Randevu listesini gösteren alan"
+        android:importantForAccessibility="yes"
+        app:layout_constraintBottom_toTopOf="@+id/buttonLogout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewAppointmentsTitle"
+        tools:listitem="@layout/item_appointment" />
+
+    <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/design_default_color_error"
+        android:text="Çıkış Yap"
+        android:textColor="@android:color/white"
+        android:contentDescription="Çıkış yap butonu"
+        android:importantForAccessibility="yes"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -33,6 +33,27 @@
         android:paddingVertical="12dp"
         android:inputType="textPassword" />
 
+    <RadioGroup
+        android:id="@+id/radioGroupRole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal">
+
+        <RadioButton
+            android:id="@+id/radioCustomer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Müşteri" />
+
+        <RadioButton
+            android:id="@+id/radioBarber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kuaför" />
+    </RadioGroup>
+
     <Button
         android:id="@+id/buttonRegister"
         android:layout_width="match_parent"

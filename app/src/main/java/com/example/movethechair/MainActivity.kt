@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return
         val appointmentsRef = database.reference.child("appointments").child(userId)
 
-        appointmentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        appointmentsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val now = Calendar.getInstance()
                 val appointments = StringBuilder()
@@ -93,6 +93,7 @@ class MainActivity : AppCompatActivity() {
                     val dateStr = appointmentSnapshot.child("date").getValue(String::class.java)
                     val timeStr = appointmentSnapshot.child("time").getValue(String::class.java)
                     val barberId = appointmentSnapshot.child("barberId").getValue(String::class.java)
+                    val status = appointmentSnapshot.child("status").getValue(String::class.java) ?: "beklemede"
 
                     if (dateStr != null && timeStr != null) {
                         val dateParts = dateStr.split("_")
@@ -108,12 +109,28 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             if (appointmentDate.before(now)) {
-                                appointmentSnapshot.ref.removeValue()
+
+                                if (status == "tamamlandı" || now.timeInMillis - appointmentDate.timeInMillis > 24 * 60 * 60 * 1000) {
+                                    appointmentSnapshot.ref.removeValue()
+                                } else {
+
+                                    getBarberInfo(barberId) { barberName ->
+                                        val formattedDate = dateStr.replace("_", "/")
+                                        val formattedTime = timeStr.replace("_", ":")
+                                        val statusText = getStatusText(status)
+
+                                        appointments.append("- $barberName: $formattedDate saat $formattedTime - $statusText\n")
+                                        appointmentsTextView.text = appointments.toString()
+                                    }
+                                    hasFutureAppointments = true
+                                }
                             } else {
                                 getBarberInfo(barberId) { barberName ->
                                     val formattedDate = dateStr.replace("_", "/")
                                     val formattedTime = timeStr.replace("_", ":")
-                                    appointments.append("- $barberName: $formattedDate saat $formattedTime\n")
+                                    val statusText = getStatusText(status)
+
+                                    appointments.append("- $barberName: $formattedDate saat $formattedTime - $statusText\n")
                                     appointmentsTextView.text = appointments.toString()
                                 }
                                 hasFutureAppointments = true
@@ -133,6 +150,15 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun getStatusText(status: String): String {
+        return when (status) {
+            "beklemede" -> "Beklemede"
+            "onaylandı" -> "✓ Onaylandı"
+            "iptal_edildi" -> "✗ İptal Edildi"
+            "tamamlandı" -> "✓ Tamamlandı"
+            else -> status
+        }
+    }
 
     private fun getBarberInfo(barberId: String?, callback: (String) -> Unit) {
         if (barberId == null) {
