@@ -1,23 +1,34 @@
 package com.example.movethechair
 
 import android.content.Intent
+import android.content.res.Resources
 import android.os.Bundle
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import java.util.Calendar
+import java.util.*
 
 class CustomerActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
     private lateinit var userNameTextView: TextView
-    private lateinit var appointmentsTextView: TextView
-    private lateinit var logoutButton: Button
     private lateinit var bookAppointmentButton: Button
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private var isShowingHomeContent = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,122 +45,213 @@ class CustomerActivity : AppCompatActivity() {
 
         initializeViews()
         setupClickListeners()
+        setupBottomNav()
         loadUserData()
         loadUserAppointments()
     }
 
     private fun initializeViews() {
         userNameTextView = findViewById(R.id.textViewUserName)
-        appointmentsTextView = findViewById(R.id.textViewAppointments)
-        logoutButton = findViewById(R.id.buttonLogout)
         bookAppointmentButton = findViewById(R.id.buttonBookAppointment)
+        bottomNavigationView = findViewById(R.id.bottomNavigation)
     }
 
     private fun setupClickListeners() {
-        logoutButton.setOnClickListener {
-            auth.signOut()
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-        }
-
         bookAppointmentButton.setOnClickListener {
-            val intent = Intent(this, BookAppointmentActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, BookAppointmentActivity::class.java))
         }
+    }
+
+    private fun setupBottomNav() {
+        bottomNavigationView.setOnNavigationItemSelectedListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    showHomeContent()
+                    true
+                }
+                R.id.nav_account -> {
+                    showAccountFragment()
+                    true
+                }
+                else -> false
+            }
+        }
+        bottomNavigationView.selectedItemId = R.id.nav_home
+    }
+
+    private fun showHomeContent() {
+        if (!isShowingHomeContent) {
+            supportFragmentManager.fragments.forEach {
+                supportFragmentManager.beginTransaction().remove(it).commit()
+            }
+
+            findViewById<TextView>(R.id.textViewUserName).visibility = View.VISIBLE
+            findViewById<TextView>(R.id.textViewAppointmentsTitle).visibility = View.VISIBLE
+            findViewById<android.widget.ScrollView>(R.id.scrollView).visibility = View.VISIBLE
+            bookAppointmentButton.visibility = View.VISIBLE
+
+            loadUserAppointments()
+            isShowingHomeContent = true
+        }
+    }
+
+    private fun showAccountFragment() {
+        findViewById<TextView>(R.id.textViewUserName).visibility = View.GONE
+        findViewById<TextView>(R.id.textViewAppointmentsTitle).visibility = View.GONE
+        findViewById<android.widget.ScrollView>(R.id.scrollView).visibility = View.GONE
+        bookAppointmentButton.visibility = View.GONE
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, AccountFragment())
+            .commit()
+
+        isShowingHomeContent = false
     }
 
     private fun loadUserData() {
         val userId = auth.currentUser?.uid ?: return
-        val userRef = database.reference.child("users").child(userId)
-
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val name = snapshot.child("name").getValue(String::class.java)
-                    userNameTextView.text = "Hoş geldiniz, $name!"
+        database.reference.child("users").child(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.child("name").getValue(String::class.java)?.let { name ->
+                        userNameTextView.text = "Hoş geldiniz, $name"
+                    }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@CustomerActivity, "Kullanıcı bilgileri alınamadı: ${error.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    showToast("Kullanıcı bilgileri alınamadı: ${error.message}")
+                }
+            })
     }
 
     private fun loadUserAppointments() {
         val userId = auth.currentUser?.uid ?: return
-        val appointmentsRef = database.reference.child("appointments").child(userId)
+        val container = findViewById<LinearLayout>(R.id.appointmentsContainer)
+        container.removeAllViews()
 
-        appointmentsRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val now = Calendar.getInstance()
-                val appointments = StringBuilder()
-                var hasFutureAppointments = false
+        database.reference.child("appointments").child(userId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    container.removeAllViews()
+                    val now = Calendar.getInstance()
+                    var hasAppointments = false
 
-                for (appointmentSnapshot in snapshot.children) {
-                    val dateStr = appointmentSnapshot.child("date").getValue(String::class.java)
-                    val timeStr = appointmentSnapshot.child("time").getValue(String::class.java)
-                    val barberId = appointmentSnapshot.child("barberId").getValue(String::class.java)
-                    val status = appointmentSnapshot.child("status").getValue(String::class.java) ?: "beklemede"
+                    if (!snapshot.exists()) {
+                        showNoAppointmentsMessage(container)
+                        return
+                    }
 
-                    if (dateStr != null && timeStr != null) {
-                        val dateParts = dateStr.split("_")
-                        val timeParts = timeStr.split("_")
-                        if (dateParts.size == 3 && timeParts.size == 2) {
-                            val appointmentDate = Calendar.getInstance().apply {
-                                set(Calendar.DAY_OF_MONTH, dateParts[0].toInt())
-                                set(Calendar.MONTH, dateParts[1].toInt() - 1)
-                                set(Calendar.YEAR, dateParts[2].toInt())
-                                set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
-                                set(Calendar.MINUTE, timeParts[1].toInt())
-                                set(Calendar.SECOND, 0)
-                            }
+                    for (appointment in snapshot.children) {
+                        val dateStr = appointment.child("date").getValue(String::class.java)
+                        val timeStr = appointment.child("time").getValue(String::class.java)
+                        val barberId = appointment.child("barberId").getValue(String::class.java)
+                        val service = appointment.child("service").getValue(String::class.java)
+                        val staffName = appointment.child("staffName").getValue(String::class.java)
+                        val status = appointment.child("status").getValue(String::class.java) ?: "beklemede"
 
-                            if (appointmentDate.before(now)) {
-                                // Past appointment
-                                if (status == "tamamlandı" || now.timeInMillis - appointmentDate.timeInMillis > 24 * 60 * 60 * 1000) {
-                                    appointmentSnapshot.ref.removeValue()
-                                } else {
-                                    // Show recently passed appointments
-                                    getBarberInfo(barberId) { barberName ->
-                                        val formattedDate = dateStr.replace("_", "/")
-                                        val formattedTime = timeStr.replace("_", ":")
-                                        val statusText = getStatusText(status)
-
-                                        appointments.append("- $barberName: $formattedDate saat $formattedTime - $statusText\n")
-                                        appointmentsTextView.text = appointments.toString()
-                                    }
-                                    hasFutureAppointments = true
-                                }
-                            } else {
-                                getBarberInfo(barberId) { barberName ->
-                                    val formattedDate = dateStr.replace("_", "/")
-                                    val formattedTime = timeStr.replace("_", ":")
-                                    val statusText = getStatusText(status)
-
-                                    appointments.append("- $barberName: $formattedDate saat $formattedTime - $statusText\n")
-                                    appointmentsTextView.text = appointments.toString()
-                                }
-                                hasFutureAppointments = true
+                        if (dateStr != null && timeStr != null) {
+                            val appointmentDate = parseAppointmentDate(dateStr, timeStr)
+                            if (appointmentDate != null && appointmentDate.after(now)) {
+                                createAppointmentCard(
+                                    container,
+                                    barberId,
+                                    service,
+                                    staffName,
+                                    dateStr,
+                                    timeStr,
+                                    status
+                                )
+                                hasAppointments = true
                             }
                         }
                     }
+
+                    if (!hasAppointments) {
+                        showNoAppointmentsMessage(container)
+                    }
                 }
 
-                if (!hasFutureAppointments) {
-                    appointmentsTextView.text = "Henüz gelecekte bir randevunuz bulunmamaktadır."
+                override fun onCancelled(error: DatabaseError) {
+                    showToast("Randevu bilgileri alınamadı: ${error.message}")
                 }
-            }
+            })
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@CustomerActivity, "Randevu bilgileri alınamadı: ${error.message}", Toast.LENGTH_SHORT).show()
+    private fun parseAppointmentDate(dateStr: String, timeStr: String): Calendar? {
+        return try {
+            val dateParts = dateStr.split("_")
+            val timeParts = timeStr.split("_")
+            if (dateParts.size == 3 && timeParts.size == 2) {
+                Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_MONTH, dateParts[0].toInt())
+                    set(Calendar.MONTH, dateParts[1].toInt() - 1)
+                    set(Calendar.YEAR, dateParts[2].toInt())
+                    set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
+                    set(Calendar.MINUTE, timeParts[1].toInt())
+                    set(Calendar.SECOND, 0)
+                }
+            } else {
+                null
             }
-        })
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun createAppointmentCard(
+        container: LinearLayout,
+        barberId: String?,
+        service: String?,
+        staffName: String?,
+        dateStr: String,
+        timeStr: String,
+        status: String
+    ) {
+        getBarberName(barberId) { barberName ->
+            val cardView = LayoutInflater.from(this)
+                .inflate(R.layout.appointment_card, container, false) as CardView
+
+            val formattedDate = dateStr.replace("_", "/")
+            val formattedTime = timeStr.replace("_", ":")
+
+            cardView.findViewById<TextView>(R.id.textViewBarberName).text = barberName
+            cardView.findViewById<TextView>(R.id.textViewStatus).apply {
+                text = getStatusText(status)
+                setTextColor(getStatusColor(status))
+            }
+            cardView.findViewById<TextView>(R.id.textViewService).text = buildServiceText(service, staffName)
+            cardView.findViewById<TextView>(R.id.textViewDateTime).text = "Tarih: $formattedDate\nSaat: $formattedTime"
+
+            container.addView(cardView)
+        }
+    }
+
+    private fun getBarberName(barberId: String?, callback: (String) -> Unit) {
+        if (barberId == null) {
+            callback("Bilinmeyen Kuaför")
+            return
+        }
+
+        database.reference.child("barbers").child(barberId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    callback(snapshot.child("name").getValue(String::class.java) ?: "Bilinmeyen Kuaför")
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    callback("Bilinmeyen Kuaför")
+                }
+            })
+    }
+
+    private fun buildServiceText(service: String?, staffName: String?): String {
+        return "Hizmet: ${service ?: "Belirtilmemiş"}" +
+                if (!staffName.isNullOrEmpty()) " ($staffName)" else ""
     }
 
     private fun getStatusText(status: String): String {
         return when (status) {
-            "beklemede" -> "Beklemede"
+            "beklemede" -> "⏳ Beklemede"
             "onaylandı" -> "✓ Onaylandı"
             "iptal_edildi" -> "✗ İptal Edildi"
             "tamamlandı" -> "✓ Tamamlandı"
@@ -157,26 +259,29 @@ class CustomerActivity : AppCompatActivity() {
         }
     }
 
-    private fun getBarberInfo(barberId: String?, callback: (String) -> Unit) {
-        if (barberId == null) {
-            callback("Bilinmeyen Kuaför")
-            return
+    private fun getStatusColor(status: String): Int {
+        return when (status) {
+            "onaylandı" -> ContextCompat.getColor(this, android.R.color.holo_green_dark)
+            "iptal_edildi" -> ContextCompat.getColor(this, android.R.color.holo_red_dark)
+            else -> ContextCompat.getColor(this, android.R.color.holo_orange_dark)
         }
+    }
 
-        val barberRef = database.reference.child("barbers").child(barberId)
-        barberRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val barberName = snapshot.child("name").getValue(String::class.java) ?: "Bilinmeyen Kuaför"
-                    callback(barberName)
-                } else {
-                    callback("Bilinmeyen Kuaför")
-                }
-            }
+    private fun showNoAppointmentsMessage(container: LinearLayout) {
+        TextView(this).apply {
+            text = "Henüz randevunuz bulunmamaktadır"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            gravity = Gravity.CENTER
+            setPadding(0, dpToPx(32), 0, 0)
+            container.addView(this)
+        }
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                callback("Bilinmeyen Kuaför")
-            }
-        })
+    private fun dpToPx(dp: Int): Int {
+        return (dp * Resources.getSystem().displayMetrics.density).toInt()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
