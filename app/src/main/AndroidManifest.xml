@@ -40,6 +40,7 @@
         <activity android:name=".HizmetYonetimActivity"></activity>
         <activity android:name=".StaffActivity"></activity>
         <activity android:name=".AccountActivity"></activity>
+        <activity android:name=".CustomerActivity"></activity>
 
 
 

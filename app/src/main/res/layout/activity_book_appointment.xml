@@ -18,32 +18,7 @@
             android:gravity="center"
             android:layout_marginBottom="24dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hizmet Seçin:" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginVertical="8dp">
-
-            <Button
-                android:id="@+id/buttonHaircut"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Saç Kesim" />
-
-            <Button
-                android:id="@+id/buttonColor"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Saç Boyama" />
-        </LinearLayout>
-
+        <!-- Kuaför Seçimi -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,29 +32,68 @@
             android:paddingVertical="8dp"
             android:layout_marginVertical="8dp" />
 
+        <!-- Hizmet Seçimi -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hizmet Seçin:" />
+
+        <Spinner
+            android:id="@+id/spinnerServices"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:paddingVertical="8dp"
+            android:layout_marginVertical="8dp" />
+
+        <!-- Çalışan Seçimi (İsteğe Bağlı) -->
+        <LinearLayout
+            android:id="@+id/layoutStaff"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Çalışan Seçin (İsteğe Bağlı):" />
+
+            <Spinner
+                android:id="@+id/spinnerStaff"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:minHeight="48dp"
+                android:paddingVertical="8dp"
+                android:layout_marginVertical="8dp" />
+        </LinearLayout>
+
+        <!-- Tarih Seçimi -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tarih Seçin:" />
 
-        <DatePicker
-            android:id="@+id/datePicker"
+        <Spinner
+            android:id="@+id/spinnerDateSelection"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:calendarViewShown="true" />
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:paddingVertical="8dp"
+            android:layout_marginVertical="8dp" />
 
+        <!-- Saat Seçimi -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Saat Seçin:"
-            android:layout_marginTop="16dp" />
+            android:text="Saat Seçin:" />
 
-        <GridLayout
-            android:id="@+id/gridTimeSlots"
+        <Spinner
+            android:id="@+id/spinnerTimeSelection"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="3"
-            android:layout_marginTop="8dp" />
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:paddingVertical="8dp"
+            android:layout_marginVertical="8dp" />
 
         <Button
             android:id="@+id/buttonSaveAppointment"

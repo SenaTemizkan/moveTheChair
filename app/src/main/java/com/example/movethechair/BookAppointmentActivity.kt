@@ -6,42 +6,68 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import java.text.SimpleDateFormat
 import java.util.*
 
 class BookAppointmentActivity : AppCompatActivity() {
 
     private lateinit var barberSpinner: Spinner
-    private lateinit var datePicker: DatePicker
-    private lateinit var gridTimeSlots: GridLayout
+    private lateinit var serviceSpinner: Spinner
+    private lateinit var staffSpinner: Spinner
+    private lateinit var dateSpinner: Spinner
+    private lateinit var timeSpinner: Spinner
     private lateinit var saveButton: Button
-    private var selectedTime: String? = null
-    private var selectedService: String = "Saç Kesim"
+    private lateinit var staffLayout: LinearLayout
+
     private val barberIdMap = mutableMapOf<String, String>()
-    private val hours = listOf("09:00", "10:00", "11:00", "13:00", "14:00", "15:00")
+    private val staffIdMap = mutableMapOf<String, String>()
+    private val availableDates = mutableListOf<String>()
+    private val availableTimes = mutableListOf<String>()
+    private val bookedTimes = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_book_appointment)
 
         barberSpinner = findViewById(R.id.spinnerBarbers)
-        datePicker = findViewById(R.id.datePicker)
-        gridTimeSlots = findViewById(R.id.gridTimeSlots)
+        serviceSpinner = findViewById(R.id.spinnerServices)
+        staffSpinner = findViewById(R.id.spinnerStaff)
+        dateSpinner = findViewById(R.id.spinnerDateSelection)  // Değiştirildi: spinnerDates -> spinnerDateSelection
+        timeSpinner = findViewById(R.id.spinnerTimeSelection)  // Değiştirildi: spinnerTimes -> spinnerTimeSelection
         saveButton = findViewById(R.id.buttonSaveAppointment)
+        staffLayout = findViewById(R.id.layoutStaff)
 
-        findViewById<Button>(R.id.buttonHaircut).setOnClickListener {
-            selectedService = "Saç Kesim"
-        }
-
-        findViewById<Button>(R.id.buttonColor).setOnClickListener {
-            selectedService = "Saç Boyama"
-        }
+        // 15 günlük tarihleri hazırla
+        prepareDates()
 
         loadBarbers()
 
         barberSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                setupTimeSlots()
+                val selectedBarber = barberSpinner.selectedItem.toString()
+                loadServicesForBarber(selectedBarber)
+                loadStaffForBarber(selectedBarber)
+                loadBookedAppointments()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        dateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                loadBookedAppointments()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        staffSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                loadBookedAppointments()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -50,151 +76,225 @@ class BookAppointmentActivity : AppCompatActivity() {
         saveButton.setOnClickListener {
             saveAppointment()
         }
+    }
 
-        datePicker.init(datePicker.year, datePicker.month, datePicker.dayOfMonth) { _, _, _, _ ->
-            setupTimeSlots()
+    private fun prepareDates() {
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("dd_MM_yyyy", Locale.getDefault())
+
+        for (i in 0..14) { // Bugünden itibaren 15 gün
+            availableDates.add(dateFormat.format(calendar.time))
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
         }
+
+        val dateAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, availableDates)
+        dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        dateSpinner.adapter = dateAdapter
+    }
+
+    private fun prepareTimeSlots() {
+        availableTimes.clear()
+        val times = listOf("09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00")
+
+        val selectedDate = dateSpinner.selectedItem.toString()
+        val today = SimpleDateFormat("dd_MM_yyyy", Locale.getDefault()).format(Calendar.getInstance().time)
+
+        // Eğer bugün seçilmişse, geçmiş saatleri gösterme
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
+        times.forEach { time ->
+            if (selectedDate != today || time.split(":")[0].toInt() > currentHour) {
+                if (!bookedTimes.contains(time)) {
+                    availableTimes.add(time)
+                }
+            }
+        }
+
+        val timeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, availableTimes)
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        timeSpinner.adapter = timeAdapter
     }
 
     private fun loadBarbers() {
         val barbersRef = FirebaseDatabase.getInstance().reference.child("barbers")
 
-        barbersRef.get().addOnSuccessListener { snapshot ->
-            val barberNames = mutableListOf<String>()
-            snapshot.children.forEach { barber ->
-                val name = barber.child("name").getValue(String::class.java)
-                val id = barber.key
-                if (name != null && id != null) {
-                    barberNames.add(name)
-                    barberIdMap[name] = id
-                }
-            }
-
-            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, barberNames)
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            barberSpinner.adapter = adapter
-        }.addOnFailureListener {
-            Toast.makeText(this, "Kuaförler yüklenemedi: ${it.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun setupTimeSlots() {
-        gridTimeSlots.removeAllViews()
-
-        val selectedName = barberSpinner.selectedItem?.toString() ?: return
-        val barberId = barberIdMap[selectedName] ?: return
-        val date = "${datePicker.dayOfMonth}_${datePicker.month + 1}_${datePicker.year}"
-
-        val today = Calendar.getInstance()
-        val selected = Calendar.getInstance().apply {
-            set(datePicker.year, datePicker.month, datePicker.dayOfMonth, 0, 0, 0)
-        }
-
-        if (selected.before(today.apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0) })) {
-            Toast.makeText(this, "Geçmiş tarihlere randevu alınamaz!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val appointmentsRef = FirebaseDatabase.getInstance().reference.child("appointments")
-
-        appointmentsRef.get().addOnSuccessListener { snapshot ->
-            val bookedTimes = mutableSetOf<String>()
-
-            snapshot.children.forEach { userSnapshot ->
-                userSnapshot.children.forEach { appointment ->
-                    val apptBarberId = appointment.child("barberId").getValue(String::class.java)
-                    val apptDate = appointment.child("date").getValue(String::class.java)
-                    val apptTime = appointment.child("time").getValue(String::class.java)
-
-                    if (apptBarberId == barberId && apptDate == date && apptTime != null) {
-                        bookedTimes.add(apptTime.replace("_", ":"))
+        barbersRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val barberNames = mutableListOf<String>()
+                snapshot.children.forEach { barber ->
+                    val name = barber.child("name").getValue(String::class.java)
+                    val id = barber.key
+                    if (name != null && id != null) {
+                        barberNames.add(name)
+                        barberIdMap[name] = id
                     }
                 }
+
+                val adapter = ArrayAdapter(this@BookAppointmentActivity,
+                    android.R.layout.simple_spinner_item, barberNames)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                barberSpinner.adapter = adapter
             }
 
-            for (hour in hours) {
-                val button = Button(this).apply {
-                    text = hour
-                    isEnabled = !bookedTimes.contains(hour)
-                    alpha = if (isEnabled) 1.0f else 0.4f
-                    setOnClickListener {
-                        if (isEnabled) {
-                            selectedTime = hour
-                            highlightSelected(this)
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@BookAppointmentActivity,
+                    "Kuaförler yüklenemedi: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun loadServicesForBarber(barberName: String) {
+        val barberId = barberIdMap[barberName] ?: return
+        val servicesRef = FirebaseDatabase.getInstance().reference
+            .child("barbers").child(barberId).child("services")
+
+        servicesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val serviceNames = mutableListOf<String>()
+                snapshot.children.forEach { service ->
+                    val serviceName = service.key
+                    if (serviceName != null) {
+                        serviceNames.add(serviceName)
+                    }
+                }
+
+                val adapter = ArrayAdapter(this@BookAppointmentActivity,
+                    android.R.layout.simple_spinner_item, serviceNames)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                serviceSpinner.adapter = adapter
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@BookAppointmentActivity,
+                    "Hizmetler yüklenemedi: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun loadStaffForBarber(barberName: String) {
+        val barberId = barberIdMap[barberName] ?: return
+        val staffRef = FirebaseDatabase.getInstance().reference
+            .child("barbers").child(barberId).child("staff")
+
+        staffRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val staffNames = mutableListOf<String>("Herhangi biri")
+                staffIdMap.clear()
+
+                snapshot.children.forEach { staff ->
+                    val name = staff.child("name").getValue(String::class.java)
+                    val id = staff.key
+                    if (name != null && id != null) {
+                        staffNames.add(name)
+                        staffIdMap[name] = id
+                    }
+                }
+
+                val adapter = ArrayAdapter(this@BookAppointmentActivity,
+                    android.R.layout.simple_spinner_item, staffNames)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                staffSpinner.adapter = adapter
+
+                // Eğer çalışan yoksa bu seçeneği gizle
+                staffLayout.visibility = if (staffNames.size > 1) View.VISIBLE else View.GONE
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@BookAppointmentActivity,
+                    "Çalışanlar yüklenemedi: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun loadBookedAppointments() {
+        val selectedBarber = barberSpinner.selectedItem?.toString() ?: return
+        val barberId = barberIdMap[selectedBarber] ?: return
+        val selectedDate = dateSpinner.selectedItem?.toString() ?: return
+        val selectedStaff = if (staffSpinner.selectedItemPosition > 0)
+            staffSpinner.selectedItem.toString() else null
+        val staffId = if (selectedStaff != null) staffIdMap[selectedStaff] else null
+
+        bookedTimes.clear()
+        val appointmentsRef = FirebaseDatabase.getInstance().reference.child("appointments")
+
+        appointmentsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.forEach { userSnapshot ->
+                    userSnapshot.children.forEach { appointment ->
+                        val apptBarberId = appointment.child("barberId").getValue(String::class.java)
+                        val apptStaffId = appointment.child("staffId").getValue(String::class.java)
+                        val apptDate = appointment.child("date").getValue(String::class.java)
+                        val apptTime = appointment.child("time").getValue(String::class.java)
+
+                        if (apptBarberId == barberId &&
+                            (staffId == null || apptStaffId == staffId) &&
+                            apptDate == selectedDate && apptTime != null) {
+                            bookedTimes.add(apptTime.replace("_", ":"))
                         }
                     }
                 }
-                gridTimeSlots.addView(button)
+                prepareTimeSlots()
             }
-        }
-    }
 
-    private fun highlightSelected(selectedBtn: Button) {
-        for (i in 0 until gridTimeSlots.childCount) {
-            val btn = gridTimeSlots.getChildAt(i) as Button
-            btn.setBackgroundColor(getColor(android.R.color.darker_gray))
-        }
-        selectedBtn.setBackgroundColor(getColor(android.R.color.holo_green_light))
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@BookAppointmentActivity,
+                    "Randevu bilgileri alınamadı: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun saveAppointment() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val selectedName = barberSpinner.selectedItem.toString()
-        val barberId = barberIdMap[selectedName] ?: return
-
-        val calendar = Calendar.getInstance()
-        val selectedDate = Calendar.getInstance().apply {
-            set(datePicker.year, datePicker.month, datePicker.dayOfMonth, 0, 0, 0)
-        }
-
-        if (selectedDate.before(calendar.apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0) })) {
-            Toast.makeText(this, "Geçmiş tarihe randevu alınamaz!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val date = "${datePicker.dayOfMonth}_${datePicker.month + 1}_${datePicker.year}"
-        val time = selectedTime?.replace(":", "_") ?: run {
+        val barberName = barberSpinner.selectedItem.toString()
+        val barberId = barberIdMap[barberName] ?: return
+        val serviceName = serviceSpinner.selectedItem.toString()
+        val staffName = if (staffSpinner.selectedItemPosition > 0)
+            staffSpinner.selectedItem.toString() else null
+        val staffId = if (staffName != null) staffIdMap[staffName] else null
+        val date = dateSpinner.selectedItem.toString()
+        val time = timeSpinner.selectedItem?.toString()?.replace(":", "_") ?: run {
             Toast.makeText(this, "Lütfen saat seçin", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val appointmentsRef = FirebaseDatabase.getInstance().reference.child("appointments")
+        // Bugünden önceki tarihleri kontrol et
+        val today = SimpleDateFormat("dd_MM_yyyy", Locale.getDefault()).format(Calendar.getInstance().time)
+        if (date < today) {
+            Toast.makeText(this, "Geçmiş tarihe randevu alınamaz!", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        appointmentsRef.get().addOnSuccessListener { snapshot ->
-            var isSlotTaken = false
-
-            snapshot.children.forEach { userSnapshot ->
-                userSnapshot.children.forEach { appointment ->
-                    val apptBarberId = appointment.child("barberId").getValue(String::class.java)
-                    val apptDate = appointment.child("date").getValue(String::class.java)
-                    val apptTime = appointment.child("time").getValue(String::class.java)
-
-                    if (apptBarberId == barberId && apptDate == date && apptTime == time) {
-                        isSlotTaken = true
-                    }
-                }
-            }
-
-            if (isSlotTaken) {
-                Toast.makeText(this, "Bu saat ve kuaförde zaten bir randevu var!", Toast.LENGTH_LONG).show()
-            } else {
-                val appointmentData = mapOf(
-                    "barberId" to barberId,
-                    "date" to date,
-                    "time" to time,
-                    "service" to selectedService
-                )
-
-                appointmentsRef.child(userId).push().setValue(appointmentData)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Randevu başarıyla oluşturuldu!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, MainActivity::class.java))
-                        finish()
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Hata oluştu: ${it.message}", Toast.LENGTH_SHORT).show()
-                    }
+        // Bugün için geçmiş saatleri kontrol et
+        if (date == today) {
+            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            val selectedHour = time.split("_")[0].toInt()
+            if (selectedHour <= currentHour) {
+                Toast.makeText(this, "Geçmiş saate randevu alınamaz!", Toast.LENGTH_SHORT).show()
+                return
             }
         }
+
+        val appointmentsRef = FirebaseDatabase.getInstance().reference.child("appointments")
+        val appointmentData = hashMapOf(
+            "barberId" to barberId,
+            "barberName" to barberName,
+            "service" to serviceName,
+            "date" to date,
+            "time" to time,
+            "staffId" to staffId,
+            "staffName" to staffName
+        )
+
+        appointmentsRef.child(userId).push().setValue(appointmentData)
+            .addOnSuccessListener {
+                Toast.makeText(this@BookAppointmentActivity,
+                    "Randevu başarıyla oluşturuldu!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this@BookAppointmentActivity, MainActivity::class.java))
+                finish()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this@BookAppointmentActivity,
+                    "Hata oluştu: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 }
