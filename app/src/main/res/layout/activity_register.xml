@@ -2,17 +2,17 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    android:background="#FFFFFF"
-    android:fillViewport="true">
-
+    android:fillViewport="true"
+    android:background="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        >
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Logo -->
         <ImageView
             android:id="@+id/imageViewLogo"
             android:layout_width="200dp"
@@ -21,10 +21,11 @@
             android:layout_marginBottom="16dp"
             android:background="@drawable/circle_background"
             android:clipToOutline="true"
-            android:contentDescription="Uygulama Logosu"
             android:scaleType="centerCrop"
+            android:contentDescription="Uygulama Logosu"
             android:src="@drawable/movethechair" />
 
+        <!-- Başlık -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -34,47 +35,153 @@
             android:layout_marginBottom="24dp"
             android:textColor="#000000" />
 
+        <!-- Ortak Alanlar -->
         <EditText
             android:id="@+id/editTextName"
-            android:hint="Ad"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:padding="12dp"
+            android:hint="Ad Soyad"
             android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="12dp"
-            android:inputType="textPersonName" />
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/editTextEmail"
-            android:hint="Email"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:padding="12dp"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
             android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="12dp"
-            android:inputType="textEmailAddress" />
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/editTextPassword"
-            android:hint="Şifre"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:padding="12dp"
+            android:hint="Şifre"
+            android:inputType="textPassword"
             android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="20dp"
-            android:inputType="textPassword" />
+            android:padding="12dp"
+            android:layout_marginBottom="20dp" />
 
+        <!-- Kuaför Alanları -->
+        <LinearLayout
+            android:id="@+id/layoutBarberFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/editTextBirthDate"
+                android:hint="Doğum Tarihi (gg/aa/yyyy)"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextBirthPlace"
+                android:hint="Doğum Yeri"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextTC"
+                android:hint="T.C. Kimlik No"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="number"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextBusinessName"
+                android:hint="İşyeri Adı"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextBusinessAddress"
+                android:hint="İşyeri Adresi"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextMersisNo"
+                android:hint="MERSİS No"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="number"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextTaxNumber"
+                android:hint="Vergi Numarası"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="number"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextPhone1"
+                android:hint="Telefon 1"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="phone"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextPhone2"
+                android:hint="Telefon 2"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="phone"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/editTextIBAN"
+                android:hint="IBAN"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="text"
+                android:background="@android:drawable/edit_text"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+        </LinearLayout>
+
+        <!-- Rol Seçimi -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Rol Seçiniz:"
             android:textSize="16sp"
-            android:layout_marginBottom="8dp"
-            android:textColor="#000000" />
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
 
         <RadioGroup
             android:id="@+id/radioGroupRole"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
@@ -85,23 +192,23 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Müşteri"
-                android:gravity="center" />
+                android:text="Müşteri" />
 
             <RadioButton
                 android:id="@+id/radioBarber"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Kuaför"
-                android:gravity="center" />
+                android:text="Kuaför" />
         </RadioGroup>
 
+        <!-- Kayıt Butonu -->
         <Button
             android:id="@+id/buttonRegister"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Kayıt Ol"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="32dp" />
     </LinearLayout>
 </ScrollView>

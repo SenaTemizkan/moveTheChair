@@ -17,11 +17,13 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
         <activity
@@ -30,19 +32,18 @@
 
         <activity
             android:name=".RegisterActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
 
         <activity
             android:name=".BarberActivity"
             android:exported="false" />
 
         <activity android:name=".BookAppointmentActivity" />
-        <activity android:name=".HizmetYonetimActivity"></activity>
-        <activity android:name=".StaffActivity"></activity>
-        <activity android:name=".AccountActivity"></activity>
-        <activity android:name=".CustomerActivity"></activity>
-
-
+        <activity android:name=".HizmetYonetimActivity" />
+        <activity android:name=".StaffActivity" />
+        <activity android:name=".AccountActivity" />
+        <activity android:name=".CustomerActivity" />
 
     </application>
 

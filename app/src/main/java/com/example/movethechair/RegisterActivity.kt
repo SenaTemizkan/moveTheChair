@@ -2,6 +2,7 @@ package com.example.movethechair
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -11,10 +12,24 @@ class RegisterActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
+
     private lateinit var nameEditText: EditText
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var roleRadioGroup: RadioGroup
+
+    // Barber-specific fields
+    private lateinit var birthDateEditText: EditText
+    private lateinit var birthPlaceEditText: EditText
+    private lateinit var tcEditText: EditText
+    private lateinit var businessNameEditText: EditText
+    private lateinit var businessAddressEditText: EditText
+    private lateinit var mersisNoEditText: EditText
+    private lateinit var taxNumberEditText: EditText
+    private lateinit var phone1EditText: EditText
+    private lateinit var phone2EditText: EditText
+    private lateinit var ibanEditText: EditText
+    private lateinit var barberFieldsLayout: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,14 +42,34 @@ class RegisterActivity : AppCompatActivity() {
         emailEditText = findViewById(R.id.editTextEmail)
         passwordEditText = findViewById(R.id.editTextPassword)
         roleRadioGroup = findViewById(R.id.radioGroupRole)
-        val registerButton = findViewById<Button>(R.id.buttonRegister)
 
-        registerButton.setOnClickListener {
+        // Barber fields
+        birthDateEditText = findViewById(R.id.editTextBirthDate)
+        birthPlaceEditText = findViewById(R.id.editTextBirthPlace)
+        tcEditText = findViewById(R.id.editTextTC)
+        businessNameEditText = findViewById(R.id.editTextBusinessName)
+        businessAddressEditText = findViewById(R.id.editTextBusinessAddress)
+        mersisNoEditText = findViewById(R.id.editTextMersisNo)
+        taxNumberEditText = findViewById(R.id.editTextTaxNumber)
+        phone1EditText = findViewById(R.id.editTextPhone1)
+        phone2EditText = findViewById(R.id.editTextPhone2)
+        ibanEditText = findViewById(R.id.editTextIBAN)
+        barberFieldsLayout = findViewById(R.id.layoutBarberFields)
+
+        roleRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.radioBarber) {
+                barberFieldsLayout.visibility = View.VISIBLE
+            } else {
+                barberFieldsLayout.visibility = View.GONE
+            }
+        }
+
+        findViewById<Button>(R.id.buttonRegister).setOnClickListener {
             val name = nameEditText.text.toString().trim()
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
-
             val selectedRoleId = roleRadioGroup.checkedRadioButtonId
+
             if (selectedRoleId == -1) {
                 Toast.makeText(this, "Lütfen bir rol seçin", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -46,22 +81,26 @@ class RegisterActivity : AppCompatActivity() {
                 else -> ""
             }
 
-            if (name.isEmpty()) {
-                nameEditText.error = "İsim gerekli"
-                nameEditText.requestFocus()
+            if (name.isEmpty() || email.isEmpty() || password.length < 6) {
+                Toast.makeText(this, "Lütfen tüm bilgileri doğru girin", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (email.isEmpty()) {
-                emailEditText.error = "E-posta gerekli"
-                emailEditText.requestFocus()
-                return@setOnClickListener
-            }
+            if (role == "barber") {
+                val requiredFields = listOf(
+                    birthDateEditText, birthPlaceEditText, tcEditText,
+                    businessNameEditText, businessAddressEditText,
+                    mersisNoEditText, taxNumberEditText,
+                    phone1EditText, ibanEditText
+                )
 
-            if (password.length < 6) {
-                passwordEditText.error = "Şifre en az 6 karakter olmalı"
-                passwordEditText.requestFocus()
-                return@setOnClickListener
+                for (field in requiredFields) {
+                    if (field.text.toString().trim().isEmpty()) {
+                        field.error = "Bu alan gerekli"
+                        field.requestFocus()
+                        return@setOnClickListener
+                    }
+                }
             }
 
             registerUser(name, email, password, role)
@@ -69,46 +108,47 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun registerUser(name: String, email: String, password: String, role: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener { authResult ->
-                val user = authResult.user
+        auth.createUserWithEmailAndPassword(email, password).addOnSuccessListener { authResult ->
+            val user = authResult.user
+            user?.let {
+                val userId = it.uid
+                val userRef = database.reference.child("users").child(userId)
 
-                user?.let {
-                    val userId = it.uid
-                    val userRef = database.reference.child("users").child(userId)
+                val userData = hashMapOf(
+                    "name" to name,
+                    "email" to email,
+                    "role" to role
+                )
 
-                    val userData = hashMapOf(
-                        "name" to name,
-                        "email" to email,
-                        "role" to role
-                    )
+                userRef.setValue(userData).addOnSuccessListener {
+                    if (role == "barber") {
+                        val barberData = hashMapOf(
+                            "name" to name,
+                            "birthDate" to birthDateEditText.text.toString().trim(),
+                            "birthPlace" to birthPlaceEditText.text.toString().trim(),
+                            "tc" to tcEditText.text.toString().trim(),
+                            "businessName" to businessNameEditText.text.toString().trim(),
+                            "businessAddress" to businessAddressEditText.text.toString().trim(),
+                            "mersisNo" to mersisNoEditText.text.toString().trim(),
+                            "taxNumber" to taxNumberEditText.text.toString().trim(),
+                            "phone1" to phone1EditText.text.toString().trim(),
+                            "phone2" to phone2EditText.text.toString().trim(),
+                            "iban" to ibanEditText.text.toString().trim()
+                        )
 
-                    userRef.setValue(userData)
-                        .addOnSuccessListener {
-                            if (role == "barber") {
+                        val barberRef = database.reference.child("barbers").child(userId)
+                        barberRef.setValue(barberData)
+                    }
 
-                                val barberRef = database.reference.child("barbers").child(userId)
-                                val barberData = hashMapOf(
-                                    "name" to name,
-                                    "location" to "",
-                                    "services" to listOf<String>(),
-                                    "availableHours" to listOf<String>()
-                                )
-                                barberRef.setValue(barberData)
-                            }
-
-                            Toast.makeText(this, "Kayıt başarılı!", Toast.LENGTH_SHORT).show()
-                            startActivity(Intent(this, LoginActivity::class.java))
-                            finish()
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(this, "Veritabanı hatası: ${e.message}", Toast.LENGTH_LONG).show()
-                        }
+                    Toast.makeText(this, "Kayıt başarılı!", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Veritabanı hatası: ${it.message}", Toast.LENGTH_LONG).show()
                 }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Kayıt başarısız: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Kayıt başarısız: ${it.message}", Toast.LENGTH_LONG).show()
+        }
     }
-
 }
