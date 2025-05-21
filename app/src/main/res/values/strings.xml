@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">moveTheChair</string>
+    <string name="recycler_view_description">Kuaför hizmetleri listesi</string>
+    <string name="edit_service_description">Hizmet fiyatını düzenle</string>
+    <string name="delete_service_description">Hizmeti sil</string>
+    <string name="no_services_added">Henüz hiç hizmet eklemediniz</string>
+    <string name="no_services_added_description">Henüz eklenmiş hizmet bulunmamaktadır</string>
 </resources>

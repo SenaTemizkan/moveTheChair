@@ -1,63 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:gravity="center_horizontal">
+    android:background="#FFFFFF"
+    android:fillViewport="true">
 
-    <EditText
-        android:id="@+id/editTextName"
-        android:hint="Ad"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:minHeight="48dp"
-        android:paddingVertical="12dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        >
+        <ImageView
+            android:id="@+id/imageViewLogo"
+            android:layout_width="200dp"
+            android:layout_height="185dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/circle_background"
+            android:clipToOutline="true"
+            android:contentDescription="Uygulama Logosu"
+            android:scaleType="centerCrop"
+            android:src="@drawable/movethechair" />
 
-    <EditText
-        android:id="@+id/editTextEmail"
-        android:hint="Email"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:minHeight="48dp"
-        android:paddingVertical="12dp"
-        android:inputType="textEmailAddress" />
-
-    <EditText
-        android:id="@+id/editTextPassword"
-        android:hint="Şifre"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:minHeight="48dp"
-        android:paddingVertical="12dp"
-        android:inputType="textPassword" />
-
-    <RadioGroup
-        android:id="@+id/radioGroupRole"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp"
-        android:gravity="center_horizontal">
-
-        <RadioButton
-            android:id="@+id/radioCustomer"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Müşteri" />
+            android:text="Kayıt Formu"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:textColor="#000000" />
 
-        <RadioButton
-            android:id="@+id/radioBarber"
+        <EditText
+            android:id="@+id/editTextName"
+            android:hint="Ad"
+            android:layout_width="300dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginBottom="12dp"
+            android:inputType="textPersonName" />
+
+        <EditText
+            android:id="@+id/editTextEmail"
+            android:hint="Email"
+            android:layout_width="300dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginBottom="12dp"
+            android:inputType="textEmailAddress" />
+
+        <EditText
+            android:id="@+id/editTextPassword"
+            android:hint="Şifre"
+            android:layout_width="300dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginBottom="20dp"
+            android:inputType="textPassword" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Kuaför" />
-    </RadioGroup>
+            android:text="Rol Seçiniz:"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"
+            android:textColor="#000000" />
 
-    <Button
-        android:id="@+id/buttonRegister"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Kayıt Ol"
-        android:layout_marginTop="16dp" />
-</LinearLayout>
+        <RadioGroup
+            android:id="@+id/radioGroupRole"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/radioCustomer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Müşteri"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/radioBarber"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Kuaför"
+                android:gravity="center" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/buttonRegister"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:text="Kayıt Ol"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+</ScrollView>

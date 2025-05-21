@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_appointments"
+        android:icon="@drawable/ic_appointment"
+        android:title="Randevular"/>
+
+    <item
+        android:id="@+id/nav_services"
+        android:icon="@drawable/ic_services"
+        android:title="Hizmetler"/>
+
+    <item
+        android:id="@+id/nav_staff"
+        android:icon="@drawable/ic_staff"
+        android:title="Çalışanlar"/>
+
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="Çıkış Yap"/>
+</menu>

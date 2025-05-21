@@ -37,6 +37,11 @@
             android:exported="false" />
 
         <activity android:name=".BookAppointmentActivity" />
+        <activity android:name=".HizmetYonetimActivity"></activity>
+        <activity android:name=".StaffActivity"></activity>
+        <activity android:name=".AccountActivity"></activity>
+
+
 
     </application>
 

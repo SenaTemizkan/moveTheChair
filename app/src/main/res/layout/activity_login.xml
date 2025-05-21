@@ -6,7 +6,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:gravity="center_horizontal">
+    android:gravity="center"
+    android:background="@android:color/white">
+
+
+
+    <ImageView
+        android:id="@+id/imageViewLogo"
+        android:layout_width="200dp"
+        android:layout_height="185dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/circle_background"
+        android:clipToOutline="true"
+        android:contentDescription="Uygulama Logosu"
+        android:scaleType="centerCrop"
+        android:src="@drawable/movethechair" />
+
+    <TextView
+        android:id="@+id/textViewWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hoş Geldiniz"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="24dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -38,17 +63,18 @@
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
+
     <Button
         android:id="@+id/buttonLogin"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="Giriş Yap"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:text="Giriş Yap" />
 
     <Button
         android:id="@+id/buttonGoToRegister"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="Kayıt Sayfasına Git"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:text="Yeni Hesap Oluştur" />
 </LinearLayout>

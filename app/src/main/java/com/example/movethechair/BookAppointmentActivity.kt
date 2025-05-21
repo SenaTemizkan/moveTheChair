@@ -51,19 +51,7 @@ class BookAppointmentActivity : AppCompatActivity() {
             saveAppointment()
         }
 
-        datePicker.setOnDateChangedListenerManual()
-    }
-
-    private fun DatePicker.setOnDateChangedListenerManual() {
-        val today = Calendar.getInstance()
-        val selected = Calendar.getInstance().apply {
-            set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
-        }
-
-        if (selected.before(today)) {
-            gridTimeSlots.removeAllViews()
-            Toast.makeText(this@BookAppointmentActivity, "Geçmiş tarihlere randevu alınamaz!", Toast.LENGTH_SHORT).show()
-        } else {
+        datePicker.init(datePicker.year, datePicker.month, datePicker.dayOfMonth) { _, _, _, _ ->
             setupTimeSlots()
         }
     }
@@ -97,13 +85,13 @@ class BookAppointmentActivity : AppCompatActivity() {
         val barberId = barberIdMap[selectedName] ?: return
         val date = "${datePicker.dayOfMonth}_${datePicker.month + 1}_${datePicker.year}"
 
-        val calendar = Calendar.getInstance()
-        val selectedDate = Calendar.getInstance().apply {
+        val today = Calendar.getInstance()
+        val selected = Calendar.getInstance().apply {
             set(datePicker.year, datePicker.month, datePicker.dayOfMonth, 0, 0, 0)
         }
 
-        if (selectedDate.before(calendar.apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0) })) {
-            Toast.makeText(this, "Geçmiş tarihler için randevu alınamaz!", Toast.LENGTH_SHORT).show()
+        if (selected.before(today.apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0) })) {
+            Toast.makeText(this, "Geçmiş tarihlere randevu alınamaz!", Toast.LENGTH_SHORT).show()
             return
         }
 
