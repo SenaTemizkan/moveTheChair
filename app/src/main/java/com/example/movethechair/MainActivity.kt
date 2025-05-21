@@ -1,13 +1,11 @@
 package com.example.movethechair
 
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,15 +19,12 @@ class MainActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
-        // Check if user is logged in
         if (auth.currentUser == null) {
-            // User is not logged in, redirect to login screen
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         }
 
-        // User is logged in, check user type and redirect accordingly
         checkUserTypeAndNavigate()
     }
 
@@ -42,6 +37,8 @@ class MainActivity : AppCompatActivity() {
                 if (snapshot.exists()) {
                     val userType = snapshot.child("role").value.toString()
 
+
+
                     when (userType) {
                         "barber" -> {
                             // Redirect to barber activity
@@ -52,6 +49,9 @@ class MainActivity : AppCompatActivity() {
                             // Redirect to customer activity
                             startActivity(Intent(this@MainActivity, CustomerActivity::class.java))
                             finish()
+                        }
+                        "admin" -> {
+                            startActivity(Intent(this@MainActivity, AdminActivity::class.java))
                         }
                         else -> {
                             // Handle unknown user type (fallback to login)
@@ -72,5 +72,6 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         })
+
     }
 }

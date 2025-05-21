@@ -1,0 +1,70 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFF"
+    android:padding="16dp"
+    android:layout_marginBottom="12dp"
+    android:elevation="4dp">
+
+    <TextView
+        android:id="@+id/fullName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ad Soyad"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/toggleDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Detayları Göster"
+        android:textColor="#007BFF"
+        android:layout_marginTop="8dp" />
+
+    <LinearLayout
+        android:id="@+id/detailsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginTop="8dp">
+
+        <!-- Tüm detaylar burada -->
+        <TextView android:id="@+id/birthDate" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/birthPlace" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/tc" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/workplaceName" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/workplaceAddress" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/mersisNo" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/taxNumber" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/phone1" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/phone2" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/email" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView android:id="@+id/iban" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/actionButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/approveButton"
+            android:text="Onayla"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/rejectButton"
+            android:text="Reddet"
+            android:layout_marginStart="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</LinearLayout>

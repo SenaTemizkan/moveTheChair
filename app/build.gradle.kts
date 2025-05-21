@@ -52,8 +52,11 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation ("androidx.recyclerview:recyclerview:1.3.2")
     implementation ("com.google.android.material:material:1.6.0")
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
-
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.viewpager2:viewpager2:1.0.0")
     // Test kütüphaneleri
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

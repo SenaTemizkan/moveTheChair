@@ -114,32 +114,33 @@ class RegisterActivity : AppCompatActivity() {
                 val userId = it.uid
                 val userRef = database.reference.child("users").child(userId)
 
-                val userData = hashMapOf(
+                // Kullanıcı temel bilgileri
+                val userData = mutableMapOf<String, Any>(
                     "name" to name,
                     "email" to email,
                     "role" to role
                 )
 
-                userRef.setValue(userData).addOnSuccessListener {
-                    if (role == "barber") {
-                        val barberData = hashMapOf(
-                            "name" to name,
+                // Eğer berberse detayları ekle + approvalStatus = "pending"
+                if (role == "barber") {
+                    userData.putAll(
+                        mapOf(
                             "birthDate" to birthDateEditText.text.toString().trim(),
                             "birthPlace" to birthPlaceEditText.text.toString().trim(),
                             "tc" to tcEditText.text.toString().trim(),
-                            "businessName" to businessNameEditText.text.toString().trim(),
-                            "businessAddress" to businessAddressEditText.text.toString().trim(),
+                            "workplaceName" to businessNameEditText.text.toString().trim(),
+                            "workplaceAddress" to businessAddressEditText.text.toString().trim(),
                             "mersisNo" to mersisNoEditText.text.toString().trim(),
                             "taxNumber" to taxNumberEditText.text.toString().trim(),
                             "phone1" to phone1EditText.text.toString().trim(),
                             "phone2" to phone2EditText.text.toString().trim(),
-                            "iban" to ibanEditText.text.toString().trim()
+                            "iban" to ibanEditText.text.toString().trim(),
+                            "approvalStatus" to "pending" // 👈 burada işte
                         )
+                    )
+                }
 
-                        val barberRef = database.reference.child("barbers").child(userId)
-                        barberRef.setValue(barberData)
-                    }
-
+                userRef.setValue(userData).addOnSuccessListener {
                     Toast.makeText(this, "Kayıt başarılı!", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, LoginActivity::class.java))
                     finish()
