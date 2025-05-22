@@ -14,7 +14,7 @@ class BarberAdapter(
 ) : RecyclerView.Adapter<BarberAdapter.BarberViewHolder>() {
 
     inner class BarberViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val fullName: TextView = itemView.findViewById(R.id.fullName)
+        val Name: TextView = itemView.findViewById(R.id.Name)
         val toggleDetails: TextView = itemView.findViewById(R.id.toggleDetails)
         val detailsLayout: LinearLayout = itemView.findViewById(R.id.detailsLayout)
         val approveButton: Button = itemView.findViewById(R.id.approveButton)
@@ -29,7 +29,7 @@ class BarberAdapter(
 
     override fun onBindViewHolder(holder: BarberViewHolder, position: Int) {
         val barber = barberList[position]
-        holder.fullName.text = barber.fullName ?: "Ad yok"
+        holder.Name.text = barber.Name ?: "Ad yok"
 
         val detailsMap = mapOf(
             R.id.birthDate to "Doğum Tarihi: ${barber.birthDate}",
