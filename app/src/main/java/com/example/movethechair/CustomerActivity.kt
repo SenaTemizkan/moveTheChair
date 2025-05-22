@@ -29,6 +29,7 @@ class CustomerActivity : AppCompatActivity() {
     private lateinit var bookAppointmentButton: Button
     private lateinit var bottomNavigationView: BottomNavigationView
     private var isShowingHomeContent = true
+    private var currentUserName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,7 +115,10 @@ class CustomerActivity : AppCompatActivity() {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     snapshot.child("name").getValue(String::class.java)?.let { name ->
-                        userNameTextView.text = "Hoş geldiniz, $name"
+                        currentUserName = name
+                        // İsmi büyük harfle başlatıyoruz
+                        val capitalizedName = capitalizeWords(name)
+                        userNameTextView.text = "Hoş geldiniz, $capitalizedName"
                     }
                 }
 
@@ -209,18 +213,22 @@ class CustomerActivity : AppCompatActivity() {
     ) {
         getBarberName(barberId) { barberName ->
             val cardView = LayoutInflater.from(this)
-                .inflate(R.layout.appointment_card, container, false) as CardView
+                .inflate(R.layout.appointment_card_new, container, false) as CardView
 
             val formattedDate = dateStr.replace("_", "/")
             val formattedTime = timeStr.replace("_", ":")
 
-            cardView.findViewById<TextView>(R.id.textViewBarberName).text = barberName
-            cardView.findViewById<TextView>(R.id.textViewStatus).apply {
-                text = getStatusText(status)
+            // Kuaför adını büyük harfle başlatıyoruz
+            val capitalizedBarberName = capitalizeWords(barberName)
+
+            // Randevu detayları
+            cardView.findViewById<TextView>(R.id.textViewBarberName).text = "Kuaför: $capitalizedBarberName"
+            cardView.findViewById<TextView>(R.id.textViewService).text = buildServiceText(service, staffName)
+            cardView.findViewById<TextView>(R.id.textViewDateTime).text = "Tarih ve Saat: $formattedDate - $formattedTime"
+            cardView.findViewById<TextView>(R.id.textViewStatusDetail).apply {
+                text = "Durum: ${getStatusText(status)}"
                 setTextColor(getStatusColor(status))
             }
-            cardView.findViewById<TextView>(R.id.textViewService).text = buildServiceText(service, staffName)
-            cardView.findViewById<TextView>(R.id.textViewDateTime).text = "Tarih: $formattedDate\nSaat: $formattedTime"
 
             container.addView(cardView)
         }
@@ -245,16 +253,21 @@ class CustomerActivity : AppCompatActivity() {
     }
 
     private fun buildServiceText(service: String?, staffName: String?): String {
-        return "Hizmet: ${service ?: "Belirtilmemiş"}" +
-                if (!staffName.isNullOrEmpty()) " ($staffName)" else ""
+        val serviceText = "Hizmet: ${service ?: "Belirtilmemiş"}"
+        return if (!staffName.isNullOrEmpty()) {
+            val capitalizedStaffName = capitalizeWords(staffName)
+            "$serviceText Çalışan: $capitalizedStaffName"
+        } else {
+            serviceText
+        }
     }
 
     private fun getStatusText(status: String): String {
         return when (status) {
-            "beklemede" -> "⏳ Beklemede"
-            "onaylandı" -> "✓ Onaylandı"
-            "iptal_edildi" -> "✗ İptal Edildi"
-            "tamamlandı" -> "✓ Tamamlandı"
+            "beklemede" -> "Beklemede"
+            "onaylandı" -> "Onaylandı"
+            "iptal_edildi" -> "İptal Edildi"
+            "tamamlandı" -> "Tamamlandı"
             else -> status
         }
     }
@@ -263,7 +276,19 @@ class CustomerActivity : AppCompatActivity() {
         return when (status) {
             "onaylandı" -> ContextCompat.getColor(this, android.R.color.holo_green_dark)
             "iptal_edildi" -> ContextCompat.getColor(this, android.R.color.holo_red_dark)
+            "tamamlandı" -> ContextCompat.getColor(this, android.R.color.holo_blue_dark)
             else -> ContextCompat.getColor(this, android.R.color.holo_orange_dark)
+        }
+    }
+
+    // Kelimelerin ilk harfini büyük yapan yardımcı fonksiyon
+    private fun capitalizeWords(text: String): String {
+        return text.split(" ").joinToString(" ") { word ->
+            if (word.isNotEmpty()) {
+                word.lowercase().replaceFirstChar { it.uppercase() }
+            } else {
+                word
+            }
         }
     }
 

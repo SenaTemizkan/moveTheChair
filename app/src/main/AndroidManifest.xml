@@ -42,8 +42,10 @@
         <activity android:name=".BookAppointmentActivity" />
         <activity android:name=".HizmetYonetimActivity" />
         <activity android:name=".StaffActivity" />
-        <activity android:name=".AccountActivity" />
         <activity android:name=".CustomerActivity" />
+        <activity android:name=".AdminActivity" />
+        <activity android:name=".AddressActivity" />
+
 
     </application>
 

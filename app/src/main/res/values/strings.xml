@@ -5,4 +5,12 @@
     <string name="delete_service_description">Hizmeti sil</string>
     <string name="no_services_added">Henüz hiç hizmet eklemediniz</string>
     <string name="no_services_added_description">Henüz eklenmiş hizmet bulunmamaktadır</string>
+    <string name="il_secin">İl Seçin</string>
+    <string name="ilce_secin">İlçe Seçin</string>
+    <string name="adres_kaydet">Adresi Kaydet</string>
+    <string name="kaydediliyor">Kaydediliyor...</string>
+    <string name="adres_baslik">Adres Bilgileri</string>
+    <string name="adres_hint">Detaylı adres bilgisi girin...</string>
+    <string name="adres_label">Adres:</string>
+
 </resources>
