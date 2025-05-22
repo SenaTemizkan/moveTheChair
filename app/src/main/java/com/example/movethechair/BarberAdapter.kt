@@ -29,7 +29,7 @@ class BarberAdapter(
 
     override fun onBindViewHolder(holder: BarberViewHolder, position: Int) {
         val barber = barberList[position]
-        holder.Name.text = barber.Name ?: "Ad yok"
+        holder.Name.text = barber.name ?: "Ad yok"
 
         val detailsMap = mapOf(
             R.id.birthDate to "Doğum Tarihi: ${barber.birthDate}",

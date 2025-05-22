@@ -1,7 +1,7 @@
 package com.example.movethechair
 
 data class BarberUser(
-    val Name: String? = null,
+    val name: String? = null,
     val birthDate: String? = null,
     val birthPlace: String? = null,
     val tc: String? = null,
