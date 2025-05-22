@@ -11,7 +11,10 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_701">#FF018786</color>
 
-
+    <color name="bottom_nav_selected1">#2196F3</color>
+    <color name="bottom_nav_unselected1">#757575</color>
+    <color name="bottom_nav_selected">#2196F3</color>
+    <color name="bottom_nav_unselected">#757575</color>
 
     <!-- Yeni eklenen renkler -->
     <color name="dark_gray">#FF666666</color>

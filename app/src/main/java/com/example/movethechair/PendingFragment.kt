@@ -1,17 +1,13 @@
 package com.example.movethechair
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class PendingFragment : Fragment() {
@@ -33,20 +29,6 @@ class PendingFragment : Fragment() {
         recyclerView.adapter = adapter
 
         fetchPendingUsers()
-
-        view.findViewById<TextView>(R.id.nav_pending).setOnClickListener { }
-
-        view.findViewById<TextView>(R.id.nav_approved).setOnClickListener {
-            // ViewPager üzerinden geçiş yapılıyor
-            val viewPager = activity?.findViewById<ViewPager2>(R.id.viewPager)
-            viewPager?.currentItem = 1
-        }
-
-        view.findViewById<TextView>(R.id.nav_logout).setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            activity?.finish()
-        }
     }
 
     private fun fetchPendingUsers() {

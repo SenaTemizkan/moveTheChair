@@ -15,6 +15,7 @@ data class BarberUser(
     val iban: String? = null,
     val role: String? = null,
     val approvalStatus: String? = null,
+
     val uid: String? = null // Firebase UID
 )
 

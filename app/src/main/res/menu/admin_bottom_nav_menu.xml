@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
         android:id="@+id/nav_pending"
-        android:icon="@android:drawable/ic_popup_sync"
-        android:title="Bekleyen Onaylar" />
+        android:icon="@drawable/ic_pending"
+        android:title="Onay Bekleyen" />
 
     <item
         android:id="@+id/nav_approved"
-        android:icon="@android:drawable/ic_input_add"
-        android:title="Onaylananlar" />
+        android:icon="@drawable/ic_approved"
+        android:title="Onaylanan" />
+
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="Çıkış Yap" />
 
 </menu>

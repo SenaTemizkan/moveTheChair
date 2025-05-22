@@ -5,9 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
@@ -15,8 +14,7 @@ class AdminActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var database: DatabaseReference
-    private lateinit var viewPager: ViewPager2
-    private lateinit var tabLayout: TabLayout
+    private lateinit var bottomNavigation: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,9 +28,7 @@ class AdminActivity : AppCompatActivity() {
             return
         }
 
-        viewPager = findViewById(R.id.viewPager)
-        tabLayout = findViewById(R.id.tabLayout)
-
+        bottomNavigation = findViewById(R.id.bottomNavigation)
         database = FirebaseDatabase.getInstance().getReference("users").child(userId)
 
         database.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -41,7 +37,9 @@ class AdminActivity : AppCompatActivity() {
                 Log.d("AdminActivity", "Kullanıcı rolü: $role")
 
                 if (role == "admin") {
-                    setupViewPager()
+                    setupBottomNavigation()
+                    // Varsayılan olarak pending fragment'ı göster
+                    loadFragment(PendingFragment())
                 } else {
                     finishWithError("Bu alana sadece admin erişebilir.")
                 }
@@ -54,16 +52,37 @@ class AdminActivity : AppCompatActivity() {
         })
     }
 
-    private fun setupViewPager() {
-        val adapter = AdminPagerAdapter(this)
-        viewPager.adapter = adapter
-
-        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            when (position) {
-                0 -> tab.text = "Bekleyen Onaylar"
-                1 -> tab.text = "Onaylı Kuaförler"
+    private fun setupBottomNavigation() {
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_pending -> {
+                    loadFragment(PendingFragment())
+                    true
+                }
+                R.id.nav_approved -> {
+                    loadFragment(ApprovedFragment())
+                    true
+                }
+                R.id.nav_logout -> {
+                    performLogout()
+                    true
+                }
+                else -> false
             }
-        }.attach()
+        }
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
+    }
+
+    private fun performLogout() {
+        auth.signOut()
+        Toast.makeText(this, "Çıkış yapıldı", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, LoginActivity::class.java))
+        finish()
     }
 
     private fun finishWithError(message: String) {
